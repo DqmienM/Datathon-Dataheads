@@ -31,44 +31,54 @@ mask = (
 
 df_climate = df_climate[mask]
 
-# Sort ascending (lowest first)
-# df_climate = df_climate.sort_values(by="min").head(20)
+# Remove original Year Month Day
+df_climate = df_climate.drop(columns=['Day','Month','Year'])
 
 
+df_climate = df_climate.rename(columns={
+    "station_no": "mountain",
+})
 
-df_climate = df_climate[df_climate["station_no"] == 71075]
+station_to_mountain = {
+    72161: "Selwyn",
+    71032: "Thredbo",
+    83024: "Mt. Buller",
+    83084: "Falls Creek",
+    83085: "Mt. Hotham",
+    85291: "Mt. Baw Baw",
+    71075: "Perisher"
+}
 
-df_climate = df_climate.sort_values(by="Date", ascending=False)
-
-# df_climate = df_climate.sort_values(by="Date", ascending=False).head(20)
-
-
-
-# df_climate = df_climate.sort_values(by="min").head(20)
-
-# df_climate = df_climate.sort_values(by="min").head(20)
-
-
-
-plt.figure(figsize=(18,6))
-# plt.plot(df_climate['Date'], df_climate['max'], label='Max Temp')
-# plt.plot(df_climate['Date'], df_climate['min'], label='Min Temp')
-
-for year, group in df_climate.groupby('Year'):
-    plt.plot(group['Date'], group['max'], label=f'{year} Max', alpha=0.7)
-    plt.plot(group['Date'], group['min'], label=f'{year} Min', alpha=0.7)
+df_climate['mountain'] = df_climate['mountain'].replace(station_to_mountain)
 
 
+# ADD MOUNT STIRLING
+rows_to_duplicate = df_climate[df_climate['mountain'] == "Mt. Buller"].copy()
+rows_to_duplicate['mountain'] = "Mt. Stirling"
+df_climate = pd.concat([df_climate, rows_to_duplicate], ignore_index=True)
 
-ax = plt.gca()
-ax.xaxis.set_major_locator(mdates.YearLocator(1))   # every 1 year
 
-plt.xlabel('Date')
-plt.ylabel('Temperature (°C)')
-plt.title('Daily Temperatures Over Time For Station = 71075')
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
-plt.show()
+# ADD CHARLOTTE PASS
+mountains_to_average = ["Thredbo", "Perisher"]
+df_subset = df_climate[df_climate['mountain'].isin(mountains_to_average)]
+# Optional - Filter out if both either Thredbo or Perisher don't have a value 
+# date_counts = df_subset.groupby('Date')['mountain'].nunique()
+# dates_with_both = date_counts[date_counts == 2].index
+# df_subset = df_subset[df_subset['Date'].isin(dates_with_both)]
+# End Optional Filter
+df_avg = df_subset.groupby('Date', as_index=False)[['max','min','rainfall']].mean()
+df_avg['mountain'] = "Charlotte Pass"
+df_climate = pd.concat([df_climate, df_avg], ignore_index=True)
 
-# df_climate["Year"].value_counts()
+
+# FILTERS
+df_climate = df_climate[df_climate["mountain"].isin(["Charlotte Pass", "Thredbo", "Perisher"])]
+
+# df_climate = df_climate[df_climate["mountain"].isin(["Thredbo"])]
+# df_climate = df_climate[df_climate["Date"] > "2023-07-28"]
+
+# SORTATION
+df_climate = df_climate.sort_values(by="Date", ascending=False).head(50)
+
+# PRINT THE TABLE
+print(df_climate)

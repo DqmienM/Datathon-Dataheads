@@ -40,6 +40,46 @@ week1_start = pd.to_datetime( df_vis["Year"].astype(str) + "-05-09")
 df_vis["week_start"] = week1_start + pd.to_timedelta((df_vis["Week"] - 1) * 7, unit="D")
 df_vis["dates"] = df_vis["week_start"].apply(lambda d: pd.date_range(d, periods=7, freq="D"))
 df_vis = df_vis.explode("dates", ignore_index=True).rename(columns={"dates": "date"})
+df_vis = df_vis.drop(columns=["Year","week_start"])
+
+
+
+
+# Remove original Year Month Day
+df_cli = df_cli.drop(columns=['Day','Month','Year'])
+
+
+df_cli = df_cli.rename(columns={
+    "station_no": "mountain",
+})
+
+station_to_mountain = {
+    72161: "Selwyn",
+    71032: "Thredbo",
+    83024: "Mt. Buller",
+    83084: "Falls Creek",
+    83085: "Mt. Hotham",
+    85291: "Mt. Baw Baw",
+    71075: "Perisher"
+}
+
+df_cli['mountain'] = df_cli['mountain'].replace(station_to_mountain)
+
+
+# ADD MOUNT STIRLING
+rows_to_duplicate = df_cli[df_cli['mountain'] == "Mt. Buller"].copy()
+rows_to_duplicate['mountain'] = "Mt. Stirling"
+df_cli = pd.concat([df_cli, rows_to_duplicate], ignore_index=True)
+
+
+# ADD CHARLOTTE PASS
+mountains_to_average = ["Thredbo", "Perisher"]
+df_subset = df_cli[df_cli['mountain'].isin(mountains_to_average)]
+df_avg = df_subset.groupby('date', as_index=False)[['max','min','rainfall']].mean()
+df_avg['mountain'] = "Charlotte Pass"
+df_climate = pd.concat([df_cli, df_avg], ignore_index=True)
+
+# print(df_cli)
 
 #print(df_vis.to_string())
 #print(df_vis.info())
@@ -49,13 +89,24 @@ df_vis = df_vis.explode("dates", ignore_index=True).rename(columns={"dates": "da
 print("\n\n")
 
 # print(df_vis.head(120))
-print(df_cli.head(120))
+# print(df_cli.head(120))
 
 #Join is uniquely identified through station_no and date i thinkmien
-df_join = pd.merge(df_vis, df_cli, on="date", how="inner")
+df_join = pd.merge(df_vis, df_cli, on=["date"], how="inner")
+
+#turn the corresponding mountain into a visitors
+df_join["visitors"] = df_join.apply(lambda row: row[row["mountain"]]/7, axis=1)
+
+df_join = df_join.drop(mountains, axis=1)
+df_join = df_join.drop("Week", axis=1)
 
 print(df_join.columns.tolist())
 
-print(df_join[["Year_x", "date","station_no"]])
+# df_climate = df_climate.rename(columns={
+#     "station_no": "mountain",
+# })
+
+# print(df_join[["date","mountain"]])
+print(df_join)
 
 
