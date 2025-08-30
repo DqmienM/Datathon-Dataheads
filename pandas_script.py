@@ -1,6 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+# from helpers import show_scatterplot
+import seaborn as sns
 
 df_cli = pd.read_csv('climate_data.csv')
 df_vis = pd.read_csv('visitation_data.csv')
@@ -25,18 +27,24 @@ for mount in mountains:
 df_cli["date"] = pd.to_datetime(df_cli[["Year", "Month", "Day"]], errors="coerce")
 
 
-week1_start = pd.to_datetime( df_vis["Year"].astype(str) + "-01-01") 
-df_vis["date"] = pd.to_datetime(df_vis[["Year"]], errors="coerce" )
+week1_start = pd.to_datetime( df_vis["Year"].astype(str) + "-05-09")
+# week1_start = week1_start + pd.offsets.Week(weekday=0)
+# df_vis["date"] = pd.to_datetime(df_vis[["Year"]], errors="coerce" )
+df_vis["week_start"] = week1_start + pd.to_timedelta((df_vis["Week"] - 1) * 7, unit="D")
+df_vis["dates"] = df_vis["week_start"].apply(lambda d: pd.date_range(d, periods=7, freq="D"))
+df_vis = df_vis.explode("dates", ignore_index=True).rename(columns={"dates": "date"})
 
 #print(df_vis.to_string())
 #print(df_vis.info())
 #print(df_vis.describe())
 #print(df_vis.shape)
-df_vis.plot()
+# df_vis.plot()
 print("\n\n")
 
-print(df_cli.to_string())
+# print(df_vis.head(120))
+print(df_cli.head(120))
 
+df_join = pd.merge(df_vis, df_cli, on="date", how="inner")
 
-
+print(df_join.head(20))
 

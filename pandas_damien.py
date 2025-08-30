@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 import numpy as np
 
 df_climate = pd.read_csv('climate_data.csv')
@@ -33,25 +34,32 @@ df_climate = df_climate[mask]
 # Sort ascending (lowest first)
 # df_climate = df_climate.sort_values(by="min").head(20)
 
-df_climate = df_climate.sort_values(by="Date", ascending=False).head(20)
 
-df_climate = df_climate.sort_values(by="Date", ascending=False).head(20)
 
-df_climate = sf_filtered[sf_filtered["Bureau of Meteorology station number"] == 1]
+df_climate = df_climate[df_climate["station_no"] == 71075]
+
+df_climate = df_climate.sort_values(by="Date", ascending=False)
+
+# df_climate = df_climate.sort_values(by="Date", ascending=False).head(20)
+
+
 
 # df_climate = df_climate.sort_values(by="min").head(20)
 
 # df_climate = df_climate.sort_values(by="min").head(20)
 
-print(df_climate.to_string())
 
-plt.figure(figsize=(12,6))
-plt.plot(df_climate['Date'], df_climate['max'], df_climate['71075'], label='Max Temp')
-plt.plot(df_climate['Date'], df_climate['min'], df_climate['71075'], label='Min Temp')
+
+plt.figure(figsize=(18,6))
+plt.plot(df_climate['Date'], df_climate['max'], label='Max Temp')
+plt.plot(df_climate['Date'], df_climate['min'], label='Min Temp')
+
+ax = plt.gca()
+ax.xaxis.set_major_locator(mdates.YearLocator(1))   # every 1 year
 
 plt.xlabel('Date')
 plt.ylabel('Temperature (°C)')
-plt.title('Daily Temperatures Over Time')
+plt.title('Daily Temperatures Over Time For Station = 71075')
 plt.legend()
 plt.grid(True)
 plt.tight_layout()
