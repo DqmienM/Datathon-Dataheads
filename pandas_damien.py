@@ -51,8 +51,14 @@ df_climate = df_climate.sort_values(by="Date", ascending=False)
 
 
 plt.figure(figsize=(18,6))
-plt.plot(df_climate['Date'], df_climate['max'], label='Max Temp')
-plt.plot(df_climate['Date'], df_climate['min'], label='Min Temp')
+# plt.plot(df_climate['Date'], df_climate['max'], label='Max Temp')
+# plt.plot(df_climate['Date'], df_climate['min'], label='Min Temp')
+
+for year, group in df_climate.groupby('Year'):
+    plt.plot(group['Date'], group['max'], label=f'{year} Max', alpha=0.7)
+    plt.plot(group['Date'], group['min'], label=f'{year} Min', alpha=0.7)
+
+
 
 ax = plt.gca()
 ax.xaxis.set_major_locator(mdates.YearLocator(1))   # every 1 year

@@ -5,6 +5,13 @@ import numpy as np
 import seaborn as sns
 
 df_cli = pd.read_csv('climate_data.csv')
+#renam
+df_cli = df_cli.rename(columns={
+    "Bureau of Meteorology station number": "station_no",
+    "Maximum temperature (Degree C)": "max",
+    "Minimum temperature (Degree C)": "min",
+    "Rainfall amount (millimetres)": "rainfall"
+})
 df_vis = pd.read_csv('visitation_data.csv')
 
 # FILTER VISITATION DATA
@@ -44,7 +51,11 @@ print("\n\n")
 # print(df_vis.head(120))
 print(df_cli.head(120))
 
+#Join is uniquely identified through station_no and date i thinkmien
 df_join = pd.merge(df_vis, df_cli, on="date", how="inner")
 
-print(df_join.head(20))
+print(df_join.columns.tolist())
+
+print(df_join[["Year_x", "date","station_no"]])
+
 
