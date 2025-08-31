@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pandas_script import pred_visitors,df_join_weekly
 from imblearn.over_sampling import SMOTE
+import matplotlib.cm as cm
 
 
 from sklearn.model_selection import train_test_split
@@ -66,29 +67,57 @@ pred_df['min'] = model_min.predict(pred_df)
 
 df_2026 = pred_df
 
-print(df_2026.head(50))
+# print(df_2026.head(50))
 
 
-# Plot
+# # Plot
 
-# Assuming your 2026 data is in df_2026
+# # Assuming your 2026 data is in df_2026
+# weeks = sorted(df_2026['Week'].unique())
+# mountains = df_2026['mountain'].unique()
+
+# plt.figure(figsize=(14,6))
+
+# for i, week in enumerate(weeks, start=1):
+#     week_subset = df_2026[df_2026['Week'] == week]
+#     if not week_subset.empty:
+#         # get min and max across all mountains
+#         min_temp = week_subset['min'].min()
+#         max_temp = week_subset['max'].max()
+#         plt.vlines(x=i, ymin=min_temp, ymax=max_temp, color='blue', linewidth=5)
+
+# plt.xticks(range(1, len(weeks)+1), [f"W{w}" for w in weeks])
+# plt.xlabel("Week (2026)")
+# plt.ylabel("Temperature (°C)")
+# plt.title("Weekly Min-Max Temperature Range Predictions for 2026")
+# plt.grid(True, axis='y', linestyle='--', alpha=0.7)
+# plt.tight_layout()
+# plt.show()
+
 weeks = sorted(df_2026['Week'].unique())
 mountains = df_2026['mountain'].unique()
 
 plt.figure(figsize=(14,6))
 
+# Generate distinct colors for each mountain
+colors = cm.get_cmap('tab10', len(mountains))
+
 for i, week in enumerate(weeks, start=1):
     week_subset = df_2026[df_2026['Week'] == week]
-    if not week_subset.empty:
-        # get min and max across all mountains
-        min_temp = week_subset['min'].min()
-        max_temp = week_subset['max'].max()
-        plt.vlines(x=i, ymin=min_temp, ymax=max_temp, color='blue', linewidth=5)
+    for j, mountain in enumerate(mountains):
+        mountain_data = week_subset[week_subset['mountain'] == mountain]
+        if not mountain_data.empty:
+            min_temp = mountain_data['min'].values[0]
+            max_temp = mountain_data['max'].values[0]
+            plt.vlines(x=i + j*0.1, ymin=min_temp, ymax=max_temp, 
+                       color=colors(j), linewidth=5,
+                       label=mountain if i==1 else "")
 
 plt.xticks(range(1, len(weeks)+1), [f"W{w}" for w in weeks])
 plt.xlabel("Week (2026)")
 plt.ylabel("Temperature (°C)")
 plt.title("Weekly Min-Max Temperature Range Predictions for 2026")
 plt.grid(True, axis='y', linestyle='--', alpha=0.7)
+plt.legend()
 plt.tight_layout()
 plt.show()
